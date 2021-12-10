@@ -1,8 +1,37 @@
 Charm/Map
 ============
 
-A data structure similar to arrays, but you can use `null`, resources, booleans and objects
-for keys.
+A Map is one of the most important data structures that PHP doesn't have. A high
+performance map is quite sophisticated and you can't really "hack it together"
+every time you actually need it, and simple array scanning approaches are very slow
+in comparison.
+
+ * Keys of any type - objects, arrays, booleans and even `null`.
+ * Values of any type.
+ * "Template type emulation": `Map<string, int>` can be created using
+   `$map = Map::T([ 'string', 'int' ])`.
+ * Countable: `count($map)`
+ * Iterable: `foreach ($map as $key => $value) {}`
+ * Implicit item creation: `$map['newKey'][] = "Value";` does not trigger a notice,
+   even if 'newKey' does not exist.
+
+Which problem it solves is up to you. It allows you to associate any PHP value with
+any other PHP value and is very useful in building graphs and caching and detecting
+loop recursion in tree structures.
+
+The inherent problem with arrays:
+
+```
+// various types are converted to int
+$array[1.23] = "Foo";       // actual value: [ 1 => "Foo" ]
+$array[true] = "Foo";       // actual value: [ 1 => "Foo" ]
+$array[null] = "Foo";       // actual value: [ "" => "Foo" ]
+
+// Other types are fatal errors
+$array[ [1,2,3] ];          // PHP Fatal error:  Illegal offset type
+$array[ $user ];            // PHP Fatal error:  Illegal offset type
+$array[ tmpfile() ];        // PHP Fatal error:  Illegal offset type
+```
 
 
 Quick Start
@@ -37,22 +66,31 @@ A map is different from PHP's built-in array in that you can use any value as th
 arrays don't allow you to use float numbers, resource pointers or objects as a key.
 
 
-Template Type
--------------
-
-To create a `Map<int, User>` or something similar, you can use the `Map::T(array $types)` function.
+Friend of a Friend traversal example (FOAF)
+-------------------------------------------
 
 ```
-$map = Map::T(['int', User::class]);
+$friends = new Map();
+$friends[$user_A][$user_B] = 1;                   // register all current friendships
+$friends[$user_A][$user_C] = 1;
+$friends[$user_B][$user_C] = 1;                   
+$friends[$user_B][$user_D] = 1;                   // only $user_B is friend with $user_D
 
-$map[123] = "Hello"; // fails because we're expecting an object of type 'User'
+// traverse friends of friends graph
+foreach ( $friends[$user_A] as $friend_1 => $distance_1) {
+
+    foreach ($friends[$friend] as $friend_2 => $distance_2) {
+
+        if ( $user_A === $friend_2 ) {
+            // ignore friendships back to myself
+        } elseif ( isset( $friends[$user_A][$friend_2] ) ) {
+            // i am already a friend
+        } else {
+            echo "$friend_2 is a friend of a friend to you!\n";
+        }
+    }
+}
 ```
-
-Features
---------
-
-What more do you need?
-
 
 Caveats
 -------
