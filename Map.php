@@ -257,7 +257,7 @@ class Map implements \Countable, \IteratorAggregate, \ArrayAccess {
         } elseif (is_resource($key)) {
             return 'r'.((int) $key);
         } elseif (is_array($key)) {
-            return 'a'.md5(serialize, true);
+            return 'a'.md5(serialize($key), true);
         } elseif ($key === null) {
             return 'n';
         } else {
