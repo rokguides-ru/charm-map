@@ -1,7 +1,10 @@
 <?php
 namespace Charm;
 
+require('src/TemplateTypeTrait.php');
+
 class Map implements \Countable, \IteratorAggregate, \ArrayAccess {
+    use Map\TemplateTypeTrait;
 
     private $nextId = 0;            // All values are stored sequentially in $this->values and keys in $this->keys. This counter determines the offset for new items.
     private $index = [];            // Object hash maps to an array of integer indexes for keys and values. This way hash collisions should not be a problem.
@@ -19,6 +22,25 @@ class Map implements \Countable, \IteratorAggregate, \ArrayAccess {
         foreach ($this->values as $index => &$value) {
             yield $this->keys[$index] => $value;
         }
+    }
+
+    protected static function createT(array $validators, ...$constructorArgs): static {
+        return new class($validators[1] ?? function(){}, $validators[0] ?? function(){}) extends Map {
+            private
+                $keyValidator,
+                $valueValidator;
+
+            public function __construct(callable $keyValidator, callable $valueValidator) {
+                $this->keyValidator = $keyValidator;
+                $this->valueValidator = $valueValidator;
+            }
+
+            public function set($key, $value) {
+                ($this->keyValidator)($key, 'key');
+                ($this->valueValidator)($value, 'value');
+                parent::set($key, $value);
+            }
+        };
     }
 
     public function clear(): void {
@@ -220,19 +242,22 @@ class Map implements \Countable, \IteratorAggregate, \ArrayAccess {
 
     private function getHash($key) {
         if (is_int($key)) {
-            return 'i:'.$key;
+            return 'i'.$key;
         } elseif (is_float($key)) {
-            return 'f:'.$key;
+            return 'f'.$key;
         } elseif (is_bool($key)) {
-            return 'b:'.($key ? '1' : '0');
+            return 'b'.($key ? '1' : '0');
         } elseif (is_string($key)) {
-            return 's:'.$key;
+            if (strlen($key) > 31) {
+                $key = md5($key, true);
+            }
+            return 's'.$key;
         } elseif (is_object($key)) {
-            return 'o:'.\spl_object_id($key);
+            return 'o'.\spl_object_id($key);
         } elseif (is_resource($key)) {
-            return 'r:'.((int) $key);
+            return 'r'.((int) $key);
         } elseif (is_array($key)) {
-            return 'a:'.md5(serialize);
+            return 'a'.md5(serialize, true);
         } elseif ($key === null) {
             return 'n';
         } else {
