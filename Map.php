@@ -1,8 +1,6 @@
 <?php
 namespace Charm;
 
-require('src/TemplateTypeTrait.php');
-
 class Map implements \Countable, \IteratorAggregate, \ArrayAccess {
     use Map\TemplateTypeTrait;
 

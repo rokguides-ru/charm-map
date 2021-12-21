@@ -1,6 +1,6 @@
 {
     "name": "charm/map",
-    "description": "An array that support keys that are of any type, such as objects, float or booleans. A small, thorough and efficient hashmap implementation.",
+    "description": "A hashmap implementation similar to Map in javascript - allowing keys and values of any data type. A small, thorough and efficient hashmap implementation.",
     "type": "library",
     "require-dev": {
         "phpunit/phpunit": "^9.5"
