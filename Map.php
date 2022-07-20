@@ -15,7 +15,8 @@ class Map implements \Countable, \IteratorAggregate, \ArrayAccess {
     private $lastItemHash = null;   // The hash of the last item we implicitly created
     private $lastItemValue = null;  // The reference to the last item we implicitly created
 
-    public function getIterator() {
+    public function getIterator(): \Generator
+    {
         $this->processLast();
         foreach ($this->values as $index => &$value) {
             yield $this->keys[$index] => $value;
@@ -75,7 +76,8 @@ class Map implements \Countable, \IteratorAggregate, \ArrayAccess {
         }
     }
 
-    public function count() {
+    public function count(): int
+    {
         $this->processLast();
         return $this->count;
     }
@@ -148,28 +150,29 @@ class Map implements \Countable, \IteratorAggregate, \ArrayAccess {
     /**
      * {@see ArrayAccess::offsetGet}
      */
-    public function &offsetGet($key) {
+    public function &offsetGet($key): mixed {
         return $this->get($key);
     }
 
     /**
      * {@see ArrayAccess::offsetSet}
      */
-    public function offsetSet($key, $value) {
+    public function offsetSet($key, $value): void {
         $this->set($key, $value);
     }
 
     /**
      * {@see ArrayAccess::offsetExists}
      */
-    public function offsetExists($key) {
+    public function offsetExists($key): bool
+    {
         return $this->has($key);
     }
 
     /**
      * {@see ArrayAccess::offsetUnset}
      */
-    public function offsetUnset($key) {
+    public function offsetUnset(mixed $key): void {
         $this->delete($key);
     }
 
